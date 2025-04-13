@@ -7,9 +7,9 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { TagService } from './tag.service';
-import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
+import { TagService } from '@app/tag/tag.service';
+import { CreateTagDto } from '@app/tag/dto/create-tag.dto';
+import { UpdateTagDto } from '@app/tag/dto/update-tag.dto';
 
 @Controller('tags')
 export class TagController {
@@ -21,7 +21,7 @@ export class TagController {
   }
 
   @Get()
-  findAll() {
+  findAll(): string[] {
     return this.tagService.findAll();
   }
 
