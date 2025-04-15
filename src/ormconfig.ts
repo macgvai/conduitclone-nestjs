@@ -5,7 +5,7 @@ const config: TypeOrmModuleOptions = {
   host: '95.31.29.96',
   port: 5432,
   username: 'conduitclone',
-  password: '45893',
+  password: '*****',
   database: 'conduitclone',
   schema: 'public',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
