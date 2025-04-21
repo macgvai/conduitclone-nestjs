@@ -1,6 +1,6 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DataSourceOptions } from 'typeorm';
 
-const config: TypeOrmModuleOptions = {
+const config: DataSourceOptions = {
   type: 'postgres',
   // host: '192.168.1.90',
   host: '95.31.29.96',
