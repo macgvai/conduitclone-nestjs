@@ -12,6 +12,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from '@app/user/entities/user.entity';
 import { UserResponseInterface } from '@app/user/types/userResponse.interface';
+import { UserType } from '@app/user/types/user.type';
+import { UserLoginInterface } from '@app/user/types/userLogin.interface';
+import { UserLoginRespInterface } from '@app/user/types/userLoginResp.interface';
+import { LoginUserDto } from '@app/user/dto/login-user.dto';
 
 @Controller()
 export class UserController {
@@ -27,23 +31,13 @@ export class UserController {
     return this.userService.prepareUserResponse(user);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Post('users/login')
+  @UsePipes(new ValidationPipe())
+  async login(@Body('user') loginUserDto: LoginUserDto ): Promise<UserResponseInterface> {
+    const user: UserEntity | null = await this.userService.login(loginUserDto);
+
+    return this.userService.prepareUserResponse(user);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
-  }
 }

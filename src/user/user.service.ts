@@ -7,21 +7,25 @@ import { Repository } from 'typeorm';
 import { UserResponseInterface } from '@app/user/types/userResponse.interface';
 import { sign } from 'jsonwebtoken';
 import { JWT_SECRET } from '@app/config';
+import { compare } from 'bcrypt';
+import { LoginUserDto } from '@app/user/dto/login-user.dto';
+import { UserLoginRespInterface } from '@app/user/types/userLoginResp.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     public readonly userRepository: Repository<UserEntity>,
-  ) {}
+  ) {
+  }
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     const userByEmail = await this.userRepository.findOne({
-      where: { email: createUserDto.email }
-    })
+      where: { email: createUserDto.email },
+    });
     const userByUsername = await this.userRepository.findOne({
-      where: { username: createUserDto.username }
-    })
+      where: { username: createUserDto.username },
+    });
 
     if (userByEmail || userByUsername) {
       throw new HttpException('Email or username already exists', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -33,21 +37,30 @@ export class UserService {
     return await this.userRepository.save(newUser);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async login(loginUserDto: LoginUserDto): Promise<UserEntity> {
+    const user: any = await this.userRepository.findOne({
+      where: { email: loginUserDto.email },
+      select: ['id', 'username','email', 'bio', 'image', 'password']
+    });
+
+    if (!user) {
+      throw new HttpException('Invalid email or password', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+
+    const isPasswordValid = await compare(loginUserDto.password, user.password);
+    if (!isPasswordValid) {
+      throw new HttpException('Invalid email or password', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    // user.password = '';
+    delete user.password;
+    // const { password, ...userWithoutPassword } = user;
+
+
+    return user;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
 
   generateJwt(user: UserEntity) {
     return sign(
