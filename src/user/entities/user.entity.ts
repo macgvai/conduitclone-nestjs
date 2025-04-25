@@ -18,7 +18,7 @@ export class UserEntity {
   @Column({ default: '' })
   bio: string;
 
-  @Column({ default: ''})
+  @Column({ default: '' })
   image: string;
 
   @BeforeInsert()
