@@ -10,6 +10,7 @@ import {
 import { TagService } from '@app/tag/tag.service';
 import { CreateTagDto } from '@app/tag/dto/create-tag.dto';
 import { UpdateTagDto } from '@app/tag/dto/update-tag.dto';
+import { ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('tags')
 export class TagController {

@@ -12,8 +12,9 @@ export class TagService {
     private readonly tagRepository: Repository<TagEntity>,
   ) {}
 
-  create(createTagDto: CreateTagDto) {
-    return 'This action adds a new tag';
+  async create(createTagDto: CreateTagDto) {
+    const newTag = this.tagRepository.create(createTagDto);
+    return await this.tagRepository.save(newTag);
   }
 
   async findAll(): Promise<TagEntity[]> {

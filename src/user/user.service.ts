@@ -16,8 +16,7 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     public readonly userRepository: Repository<UserEntity>,
-  ) {
-  }
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     const userByEmail = await this.userRepository.findOne({
@@ -28,7 +27,10 @@ export class UserService {
     });
 
     if (userByEmail || userByUsername) {
-      throw new HttpException('Email or username already exists', HttpStatus.UNPROCESSABLE_ENTITY);
+      throw new HttpException(
+        'Email or username already exists',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
 
     const newUser = new UserEntity();
@@ -40,27 +42,36 @@ export class UserService {
   async login(loginUserDto: LoginUserDto): Promise<UserEntity> {
     const user: any = await this.userRepository.findOne({
       where: { email: loginUserDto.email },
-      select: ['id', 'username','email', 'bio', 'image', 'password']
+      select: ['id', 'username', 'email', 'bio', 'image', 'password'],
     });
 
     if (!user) {
-      throw new HttpException('Invalid email or password', HttpStatus.UNPROCESSABLE_ENTITY);
+      throw new HttpException(
+        'Invalid email or password',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
-
 
     const isPasswordValid = await compare(loginUserDto.password, user.password);
     if (!isPasswordValid) {
-      throw new HttpException('Invalid email or password', HttpStatus.UNPROCESSABLE_ENTITY);
+      throw new HttpException(
+        'Invalid email or password',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
 
     // user.password = '';
-    delete user.password;
-    // const { password, ...userWithoutPassword } = user;
+    // delete user.password;
+    const { password, ...userWithoutPassword } = user;
 
-
-    return user;
+    return userWithoutPassword;
   }
 
+  findById(id: number): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { id },
+    });
+  }
 
   generateJwt(user: UserEntity) {
     return sign(
@@ -73,7 +84,11 @@ export class UserService {
     );
   }
 
-  prepareUserResponse(user: UserEntity): UserResponseInterface {
+  prepareUserResponse(user: UserEntity | null): UserResponseInterface {
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
     return {
       user: {
         ...user,

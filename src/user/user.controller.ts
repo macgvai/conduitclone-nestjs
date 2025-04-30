@@ -3,19 +3,17 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete, UsePipes, ValidationPipe,
+  UsePipes,
+  ValidationPipe,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from '@app/user/entities/user.entity';
 import { UserResponseInterface } from '@app/user/types/userResponse.interface';
-import { UserType } from '@app/user/types/user.type';
-import { UserLoginInterface } from '@app/user/types/userLogin.interface';
-import { UserLoginRespInterface } from '@app/user/types/userLoginResp.interface';
 import { LoginUserDto } from '@app/user/dto/login-user.dto';
+import { Request } from 'express';
+import { ExpressRequestInterface } from '@app/types/expressRequest.interface';
 
 @Controller()
 export class UserController {
@@ -33,11 +31,20 @@ export class UserController {
 
   @Post('users/login')
   @UsePipes(new ValidationPipe())
-  async login(@Body('user') loginUserDto: LoginUserDto ): Promise<UserResponseInterface> {
+  async login(
+    @Body('user') loginUserDto: LoginUserDto,
+  ): Promise<UserResponseInterface> {
     const user: UserEntity | null = await this.userService.login(loginUserDto);
 
     return this.userService.prepareUserResponse(user);
   }
 
-
+  @Get('user')
+  @UsePipes(new ValidationPipe())
+  async currentUser(@Req() request: ExpressRequestInterface): Promise<UserResponseInterface> {
+    // const user = await this.userService.currentUser(id);
+    // if (request.user) {
+      return this.userService.prepareUserResponse(request.user);
+    // }
+  }
 }
