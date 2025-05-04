@@ -7,8 +7,7 @@ import { UserService } from '@app/user/user.service';
 
 @Injectable()
 export class authMiddleware implements NestMiddleware {
-  constructor(private readonly userService: UserService) {
-  }
+  constructor(private readonly userService: UserService) {}
 
   async use(req: ExpressRequestInterface, res: Response, next: NextFunction) {
     if (!req.headers.authorization) {

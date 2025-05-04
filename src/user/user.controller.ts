@@ -12,8 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserEntity } from '@app/user/entities/user.entity';
 import { UserResponseInterface } from '@app/user/types/userResponse.interface';
 import { LoginUserDto } from '@app/user/dto/login-user.dto';
-import { Request } from 'express';
-import { ExpressRequestInterface } from '@app/types/expressRequest.interface';
+import { User } from '@app/user/decorators/user.decorator';
 
 @Controller()
 export class UserController {
@@ -41,10 +40,9 @@ export class UserController {
 
   @Get('user')
   @UsePipes(new ValidationPipe())
-  async currentUser(@Req() request: ExpressRequestInterface): Promise<UserResponseInterface> {
-    // const user = await this.userService.currentUser(id);
-    // if (request.user) {
-      return this.userService.prepareUserResponse(request.user);
-    // }
+  async currentUser(
+    @User('id') user: UserEntity,
+  ): Promise<UserResponseInterface> {
+    return this.userService.prepareUserResponse(user);
   }
 }

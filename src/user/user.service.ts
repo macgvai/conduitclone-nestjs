@@ -85,7 +85,6 @@ export class UserService {
   }
 
   prepareUserResponse(user: UserEntity | null): UserResponseInterface {
-
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }

@@ -2,8 +2,8 @@ import { DataSourceOptions } from 'typeorm';
 
 const config: DataSourceOptions = {
   type: 'postgres',
-  // host: '192.168.1.90',
-  host: '95.31.29.96',
+  host: '192.168.1.90',
+  // host: '95.31.29.96',
   port: 5432,
   username: 'conduitclone',
   password: '45893',
