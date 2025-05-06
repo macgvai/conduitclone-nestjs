@@ -84,7 +84,7 @@ export class UserService {
     );
   }
 
-  prepareUserResponse(user: UserEntity | null): UserResponseInterface {
+  prepareUserResponse(user: UserEntity): UserResponseInterface {
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
