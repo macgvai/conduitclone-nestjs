@@ -77,13 +77,18 @@ export class UserService {
     id: number,
     updateUserDto: UpdateUserDto,
   ): Promise<UserEntity> {
-    const user: UserEntity | null = await this.findById(id);
+    // const user: UserEntity | null = await this.findById(id);
+    //
+    // if (!user) {
+    //   throw new NotFoundException(`User with ID ${id} not found`);
+    // }
+    //
+    // Object.assign(user, updateUserDto);
 
+    const user = await this.userRepository.preload({ id, ...updateUserDto });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-
-    Object.assign(user, updateUserDto);
 
     return await this.userRepository.save(user);
   }
