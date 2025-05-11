@@ -1,9 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@app/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { UserResponseInterface } from '@app/user/types/userResponse.interface';
 import { sign } from 'jsonwebtoken';
 import { JWT_SECRET } from '@app/config';
@@ -70,6 +70,27 @@ export class UserService {
   findById(id: number): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { id },
+    });
+  }
+
+  async updateUser(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserEntity> {
+    const user: UserEntity | null = await this.findById(id);
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    Object.assign(user, updateUserDto);
+
+    return await this.userRepository.save(user);
+  }
+
+  findOne(username: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { username },
     });
   }
 

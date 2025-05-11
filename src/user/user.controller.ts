@@ -5,7 +5,10 @@ import {
   Body,
   UsePipes,
   ValidationPipe,
-  Req, UseGuards,
+  Req,
+  UseGuards,
+  NotFoundException,
+  Put,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -14,6 +17,8 @@ import { UserResponseInterface } from '@app/user/types/userResponse.interface';
 import { LoginUserDto } from '@app/user/dto/login-user.dto';
 import { User } from '@app/user/decorators/user.decorator';
 import { AuthGuard } from '@app/user/guards/auth.guard';
+import { UpdateUserDto } from '@app/user/dto/update-user.dto';
+import { UpdateResult } from 'typeorm';
 
 @Controller()
 export class UserController {
@@ -42,9 +47,20 @@ export class UserController {
   @Get('user')
   @UsePipes(new ValidationPipe())
   @UseGuards(AuthGuard)
-  async currentUser(
-    @User() user: UserEntity,
-  ): Promise<UserResponseInterface> {
+  async currentUser(@User() user: UserEntity): Promise<UserResponseInterface> {
     return this.userService.prepareUserResponse(user);
+  }
+
+  @Put('user')
+  @UseGuards(AuthGuard)
+  async updateUser(
+    @User('id') userId: number,
+    @Body('user') updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseInterface | null> {
+    const updatedUser: UserEntity = await this.userService.updateUser(
+      userId,
+      updateUserDto,
+    );
+    return this.userService.prepareUserResponse(updatedUser);
   }
 }
