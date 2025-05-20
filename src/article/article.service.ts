@@ -12,6 +12,23 @@ export class ArticleService {
     public articleRepository: Repository<ArticleEntity>,
   ) {}
 
+  // async createArticle(
+  //   currentUser: UserEntity,
+  //   createArticleDto: CreateArticleDto,
+  // ): Promise<ArticleEntity> {
+  //   const article = new ArticleEntity();
+  //
+  //   Object.assign(article, createArticleDto);
+  //
+  //   if (!article.tagList) {
+  //     article.tagList = [];
+  //   }
+  //   article.slug = article.title;
+  //   article.author = currentUser;
+  //
+  //   return await this.articleRepository.save(article);
+  // }
+
   async createArticle(
     currentUser: UserEntity,
     createArticleDto: CreateArticleDto,
