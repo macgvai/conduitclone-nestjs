@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { UserEntity } from '@app/user/entities/user.entity';
 import { CreateArticleDto } from '@app/article/dto/createArticle.dto';
 import { ArticleEntity } from '@app/article/entities/article.entity';
@@ -50,7 +50,7 @@ export class ArticleService {
     });
 
     if (!article) {
-      throw new HttpException('Article does not exist', HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Article with slug "${slug}" not found`);
     }
     return article;
   }
