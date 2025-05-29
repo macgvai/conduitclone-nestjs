@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArticleResponseInterface } from '@app/article/types/articleResponse.interface';
 import slugify from 'slugify';
+import { DeleteResult } from 'typeorm/query-builder/result/DeleteResult';
 
 @Injectable()
 export class ArticleService {
@@ -53,6 +54,20 @@ export class ArticleService {
       throw new NotFoundException(`Article with slug "${slug}" not found`);
     }
     return article;
+  }
+
+  async deleteArticle(slug: string, currentUserId: number): Promise<DeleteResult> {
+    const article = await this.findBySlug(slug);
+
+    if (!article) {
+      throw new NotFoundException(`Article with slug "${slug}" not found`);
+    }
+
+    if (article.author.id !== currentUserId) {
+      throw new HttpException('You are not an author of this article', HttpStatus.FORBIDDEN);
+    };
+
+    return await this.articleRepository.delete({slug});
   }
 
   buildArticleResponse(article: ArticleEntity): ArticleResponseInterface {
