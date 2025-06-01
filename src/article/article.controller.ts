@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put, Query,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { AuthGuard } from '@app/user/guards/auth.guard';
 import { User } from '@app/user/decorators/user.decorator';
@@ -7,14 +18,23 @@ import { CreateArticleDto } from '@app/article/dto/createArticle.dto';
 import { ArticleResponseInterface } from '@app/article/types/articleResponse.interface';
 import { ArticleEntity } from '@app/article/entities/article.entity';
 import { UpdateArticleDto } from '@app/article/dto/updateArticle.dto';
+import { allArticleResponseInterface } from '@app/article/types/allArticleResponse.Interface';
 
 @Controller('articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
+  @Get()
+  async getAllArticles(
+    @User('id') currentUserId: number,
+    @Query() query: any): Promise<allArticleResponseInterface> {
+
+    return await this.articleService.getAllArticles(currentUserId, query);
+  }
+
   @Post()
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe)
+  @UsePipes(new ValidationPipe())
   async createArticle(
     @User() currentUser: UserEntity,
     @Body('article') createArticleDto: CreateArticleDto,
@@ -38,19 +58,27 @@ export class ArticleController {
 
   @Delete(':slug')
   @UseGuards(AuthGuard)
-  async deleteArticle(@User('id') currentUserId: number, @Param('slug') slug: string,) {
+  async deleteArticle(
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ) {
     return await this.articleService.deleteArticle(slug, currentUserId);
   }
 
   @Put(':slug')
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe)
+  @UsePipes(new ValidationPipe())
   async updateArticle(
     @User('id') currentUserId: number,
     @Param('slug') slug: string,
-    @Body('article') updateArticleDto: CreateArticleDto,): Promise<ArticleResponseInterface> {
-      const article = await this.articleService.updateArticle(slug, currentUserId, updateArticleDto);
+    @Body('article') updateArticleDto: CreateArticleDto,
+  ): Promise<ArticleResponseInterface> {
+    const article = await this.articleService.updateArticle(
+      slug,
+      currentUserId,
+      updateArticleDto,
+    );
 
-      return this.articleService.buildArticleResponse(article);
+    return this.articleService.buildArticleResponse(article);
   }
 }
