@@ -1,7 +1,7 @@
 import {
   BeforeUpdate,
   Column,
-  Entity,
+  Entity, JoinTable, ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
