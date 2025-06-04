@@ -54,6 +54,21 @@ export class ArticleService {
       queryBuilder.andWhere('author.authorId = :id', { id: author.id });
     }
 
+    if (query.favorited) {
+      const author = await this.userRepository.findOne({
+        where: { username: query.favorited},
+        relations: ['favorites']
+      })
+      const ids = author?.favorites.map(favorite => favorite.id) ?? [];
+
+      if (ids.length) {
+        queryBuilder.andWhere('articles.id = (:...id)', {id: ids});
+
+      } else {
+        queryBuilder.andWhere('1=0');
+      }
+    }
+
     if (query.limit) {
       queryBuilder.limit(query.limit);
     }
@@ -61,15 +76,25 @@ export class ArticleService {
       queryBuilder.offset(query.offset);
     }
 
-    // if (query.favorited) {
-    //   const favoritedArticle = await this.articleRepository.findOne({
-    //     where: { author: { username: `%${query.favorited}%` } },
-    //   });
-    // }
+    let favoriteIds: number[] = [];
+    if (currentUserId) {
+      const currentUser = await this.userRepository.findOne({
+        where: { id: currentUserId },
+        relations: ['favorites'],
+      });
+      favoriteIds = currentUser && currentUser.favorites.map(favorite => favorite.id) || [];
+    }
+
+
+    const articles = await queryBuilder.getMany();
+    const articlesWithFavorites = articles.map((article) => ({
+      ...article,
+      favorited: favoriteIds.includes(article.id),
+    }))
 
 
     return {
-      articles: await queryBuilder.getMany(),
+      articles: articlesWithFavorites,
       articlesCount: articlesCount,
     };
   }
@@ -163,6 +188,38 @@ export class ArticleService {
     if (isNotFavorited) {
       user.favorites.push(article);
       article.favoritesCount++;
+
+      await this.userRepository.save(user);
+      await this.articleRepository.save(article);
+    }
+
+    return article;
+  }
+
+  async deleteArticleToFavorites(currentUserId: number, slug: string): Promise<ArticleEntity> {
+    const user = await this.userRepository.findOne({
+      where: { id: currentUserId },
+      relations: ['favorites'],
+    });
+    const article = await this.findBySlug(slug);
+
+    if (!article) {
+      throw new HttpException(`Article with slug "${slug}" not found`, HttpStatus.NOT_FOUND);
+      // throw new NotFoundException(`Article with slug "${slug}" not found`);
+    }
+    if (!user) {
+      throw new HttpException(`User with id "${currentUserId}" not found`, HttpStatus.NOT_FOUND);
+      // throw new NotFoundException(`User with id "${currentUserId}" not found`);
+    }
+
+    // Проверяем, есть ли уже статья в избранном
+    const isNotFavorited = user.favorites.findIndex(fav => fav.id === article.id) === -1;
+    // const articleIndex = user.favorites.findIndex(fav => fav.id === article.id);
+
+    if (!isNotFavorited) {
+      user.favorites = user.favorites.filter(fav => fav.id !== article.id);
+      // user.favorites.splice(articleIndex, 1);
+      article.favoritesCount--;
 
       await this.userRepository.save(user);
       await this.articleRepository.save(article);
