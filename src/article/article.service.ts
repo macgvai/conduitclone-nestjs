@@ -25,7 +25,10 @@ export class ArticleService {
     private dataSource: DataSource,
   ) {}
 
-  async getAllArticles(currentUserId: number, query: any): Promise<allArticleResponseInterface> {
+  async getAllArticles(
+    currentUserId: number,
+    query: any,
+  ): Promise<allArticleResponseInterface> {
     // const queryBuilder = this.dataSource.getRepository(ArticleEntity).createQueryBuilder('articles')
     //
     const queryBuilder = this.articleRepository
@@ -36,34 +39,34 @@ export class ArticleService {
 
     const articlesCount: number = await queryBuilder.getCount();
 
-
     if (query.tag) {
       queryBuilder.andWhere('articles.tagList LIKE :tag', {
-        tag: `%${query.tag}%`
+        tag: `%${query.tag}%`,
       });
     }
 
     if (query.author) {
       const author = await this.userRepository.findOne({
-        where: { username: query.author},
-      })
+        where: { username: query.author },
+      });
       if (!author) {
-        throw new NotFoundException(`Author with username "${query.author}" not found`);
+        throw new NotFoundException(
+          `Author with username "${query.author}" not found`,
+        );
       }
 
-      queryBuilder.andWhere('author.authorId = :id', { id: author.id });
+      queryBuilder.andWhere('articles.authorId = :id', { id: author.id });
     }
 
     if (query.favorited) {
       const author = await this.userRepository.findOne({
-        where: { username: query.favorited},
-        relations: ['favorites']
-      })
-      const ids = author?.favorites.map(favorite => favorite.id) ?? [];
+        where: { username: query.favorited },
+        relations: ['favorites'],
+      });
+      const ids = author?.favorites.map((favorite) => favorite.id) ?? [];
 
       if (ids.length) {
-        queryBuilder.andWhere('articles.id = (:...id)', {id: ids});
-
+        queryBuilder.andWhere('articles.id = (:...id)', { id: ids });
       } else {
         queryBuilder.andWhere('1=0');
       }
@@ -82,16 +85,16 @@ export class ArticleService {
         where: { id: currentUserId },
         relations: ['favorites'],
       });
-      favoriteIds = currentUser && currentUser.favorites.map(favorite => favorite.id) || [];
+      favoriteIds =
+        (currentUser && currentUser.favorites.map((favorite) => favorite.id)) ||
+        [];
     }
-
 
     const articles = await queryBuilder.getMany();
     const articlesWithFavorites = articles.map((article) => ({
       ...article,
       favorited: favoriteIds.includes(article.id),
-    }))
-
+    }));
 
     return {
       articles: articlesWithFavorites,
@@ -166,7 +169,10 @@ export class ArticleService {
     return await this.articleRepository.save(article);
   }
 
-  async addArticleToFavorites(currentUserId: number, slug: string): Promise<ArticleEntity> {
+  async addArticleToFavorites(
+    currentUserId: number,
+    slug: string,
+  ): Promise<ArticleEntity> {
     const user = await this.userRepository.findOne({
       where: { id: currentUserId },
       relations: ['favorites'],
@@ -174,16 +180,23 @@ export class ArticleService {
     const article = await this.findBySlug(slug);
 
     if (!article) {
-      throw new HttpException(`Article with slug "${slug}" not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `Article with slug "${slug}" not found`,
+        HttpStatus.NOT_FOUND,
+      );
       // throw new NotFoundException(`Article with slug "${slug}" not found`);
     }
     if (!user) {
-      throw new HttpException(`User with id "${currentUserId}" not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `User with id "${currentUserId}" not found`,
+        HttpStatus.NOT_FOUND,
+      );
       // throw new NotFoundException(`User with id "${currentUserId}" not found`);
     }
 
     // Проверяем, есть ли уже статья в избранном
-    const isNotFavorited = user.favorites.findIndex(fav => fav.id === article.id) === -1;
+    const isNotFavorited =
+      user.favorites.findIndex((fav) => fav.id === article.id) === -1;
 
     if (isNotFavorited) {
       user.favorites.push(article);
@@ -196,7 +209,10 @@ export class ArticleService {
     return article;
   }
 
-  async deleteArticleToFavorites(currentUserId: number, slug: string): Promise<ArticleEntity> {
+  async deleteArticleToFavorites(
+    currentUserId: number,
+    slug: string,
+  ): Promise<ArticleEntity> {
     const user = await this.userRepository.findOne({
       where: { id: currentUserId },
       relations: ['favorites'],
@@ -204,20 +220,27 @@ export class ArticleService {
     const article = await this.findBySlug(slug);
 
     if (!article) {
-      throw new HttpException(`Article with slug "${slug}" not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `Article with slug "${slug}" not found`,
+        HttpStatus.NOT_FOUND,
+      );
       // throw new NotFoundException(`Article with slug "${slug}" not found`);
     }
     if (!user) {
-      throw new HttpException(`User with id "${currentUserId}" not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `User with id "${currentUserId}" not found`,
+        HttpStatus.NOT_FOUND,
+      );
       // throw new NotFoundException(`User with id "${currentUserId}" not found`);
     }
 
     // Проверяем, есть ли уже статья в избранном
-    const isNotFavorited = user.favorites.findIndex(fav => fav.id === article.id) === -1;
+    const isNotFavorited =
+      user.favorites.findIndex((fav) => fav.id === article.id) === -1;
     // const articleIndex = user.favorites.findIndex(fav => fav.id === article.id);
 
     if (!isNotFavorited) {
-      user.favorites = user.favorites.filter(fav => fav.id !== article.id);
+      user.favorites = user.favorites.filter((fav) => fav.id !== article.id);
       // user.favorites.splice(articleIndex, 1);
       article.favoritesCount--;
 

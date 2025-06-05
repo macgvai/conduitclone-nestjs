@@ -5,7 +5,8 @@ import {
   Get,
   Param,
   Post,
-  Put, Query,
+  Put,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -27,8 +28,8 @@ export class ArticleController {
   @Get()
   async getAllArticles(
     @User('id') currentUserId: number,
-    @Query() query: any): Promise<allArticleResponseInterface> {
-
+    @Query() query: any,
+  ): Promise<allArticleResponseInterface> {
     return await this.articleService.getAllArticles(currentUserId, query);
   }
 
@@ -88,7 +89,10 @@ export class ArticleController {
     @User('id') currentUserId: number,
     @Param('slug') slug: string,
   ): Promise<ArticleResponseInterface> {
-    const article = await this.articleService.addArticleToFavorites(currentUserId, slug);
+    const article = await this.articleService.addArticleToFavorites(
+      currentUserId,
+      slug,
+    );
 
     return this.articleService.buildArticleResponse(article);
   }
@@ -99,7 +103,10 @@ export class ArticleController {
     @User('id') currentUserId: number,
     @Param('slug') slug: string,
   ): Promise<ArticleResponseInterface> {
-    const article = await this.articleService.deleteArticleToFavorites(currentUserId, slug);
+    const article = await this.articleService.deleteArticleToFavorites(
+      currentUserId,
+      slug,
+    );
 
     return this.articleService.buildArticleResponse(article);
   }
