@@ -12,7 +12,10 @@ export class ProfileService {
     public userRepository: Repository<UserEntity>,
   ) {}
 
-  async getProfile(currentUserId: number, userName: string): Promise<ProfileType> {
+  async getProfile(
+    currentUserId: number,
+    userName: string,
+  ): Promise<ProfileType> {
     const user = await this.userRepository.findOne({
       where: { username: userName },
     });
@@ -28,10 +31,10 @@ export class ProfileService {
   }
 
   buildProfileResponse(profile: ProfileType): ProfileResponseInterface {
-    const { email, bio, ...profileWithoutEmail } = profile;
+    const { email, bio, ...profileRest } = profile;
     return {
       profile: {
-        ...profileWithoutEmail,
+        ...profileRest,
         biography: profile.bio,
       }
     };
