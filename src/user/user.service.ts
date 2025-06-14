@@ -24,6 +24,8 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const errorResponse = { errors: {} };
+
     const userByEmail = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
@@ -31,9 +33,16 @@ export class UserService {
       where: { username: createUserDto.username },
     });
 
+    if (userByEmail) {
+      errorResponse.errors['email'] = ['Email already exists'];
+    }
+
+    if (userByUsername) {
+      errorResponse.errors['username'] = ['Username already exists'];
+    }
     if (userByEmail || userByUsername) {
       throw new HttpException(
-        'Email or username already exists',
+        errorResponse,
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
@@ -45,6 +54,12 @@ export class UserService {
   }
 
   async login(loginUserDto: LoginUserDto): Promise<UserEntity> {
+    const errorResponse = {
+      errors: {
+        'email or password': ['Invalid email or password']
+      }
+    };
+
     const user: any = await this.userRepository.findOne({
       where: { email: loginUserDto.email },
       select: ['id', 'username', 'email', 'bio', 'image', 'password'],
@@ -52,7 +67,7 @@ export class UserService {
 
     if (!user) {
       throw new HttpException(
-        'Invalid email or password',
+        errorResponse,
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
@@ -60,7 +75,7 @@ export class UserService {
     const isPasswordValid = await compare(loginUserDto.password, user.password);
     if (!isPasswordValid) {
       throw new HttpException(
-        'Invalid email or password',
+        errorResponse,
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }

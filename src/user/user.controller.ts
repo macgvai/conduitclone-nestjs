@@ -19,13 +19,14 @@ import { User } from '@app/user/decorators/user.decorator';
 import { AuthGuard } from '@app/user/guards/auth.guard';
 import { UpdateUserDto } from '@app/user/dto/update-user.dto';
 import { UpdateResult } from 'typeorm';
+import { BackendValidationPipe } from '@app/shared/pipes/backendValidation.pipe';
 
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('users')
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   async create(
     @Body('user') createUserDto: CreateUserDto,
   ): Promise<UserResponseInterface> {
@@ -35,7 +36,7 @@ export class UserController {
   }
 
   @Post('users/login')
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   async login(
     @Body('user') loginUserDto: LoginUserDto,
   ): Promise<UserResponseInterface> {
@@ -45,7 +46,7 @@ export class UserController {
   }
 
   @Get('user')
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   @UseGuards(AuthGuard)
   async currentUser(@User() user: UserEntity): Promise<UserResponseInterface> {
     return this.userService.prepareUserResponse(user);

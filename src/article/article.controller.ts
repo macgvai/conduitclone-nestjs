@@ -20,6 +20,7 @@ import { ArticleResponseInterface } from '@app/article/types/articleResponse.int
 import { ArticleEntity } from '@app/article/entities/article.entity';
 import { UpdateArticleDto } from '@app/article/dto/updateArticle.dto';
 import { allArticleResponseInterface } from '@app/article/types/allArticleResponse.Interface';
+import { BackendValidationPipe } from '@app/shared/pipes/backendValidation.pipe';
 
 @Controller('articles')
 export class ArticleController {
@@ -43,7 +44,7 @@ export class ArticleController {
 
   @Post()
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   async createArticle(
     @User() currentUser: UserEntity,
     @Body('article') createArticleDto: CreateArticleDto,
@@ -76,7 +77,7 @@ export class ArticleController {
 
   @Put(':slug')
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   async updateArticle(
     @User('id') currentUserId: number,
     @Param('slug') slug: string,
