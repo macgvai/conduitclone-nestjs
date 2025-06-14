@@ -14,6 +14,7 @@ import slugify from 'slugify';
 import { DeleteResult } from 'typeorm/query-builder/result/DeleteResult';
 import { UpdateArticleDto } from '@app/article/dto/updateArticle.dto';
 import { allArticleResponseInterface } from '@app/article/types/allArticleResponse.Interface';
+import { FollowEntity } from '@app/profile/follow.entity';
 
 @Injectable()
 export class ArticleService {
@@ -23,6 +24,8 @@ export class ArticleService {
     @InjectRepository(UserEntity)
     public userRepository: Repository<UserEntity>,
     private dataSource: DataSource,
+    @InjectRepository(FollowEntity)
+    public followRepository: Repository<FollowEntity>,
   ) {}
 
   async getAllArticles(
@@ -98,6 +101,35 @@ export class ArticleService {
 
     return {
       articles: articlesWithFavorites,
+      articlesCount: articlesCount,
+    };
+  }
+
+  async getFeedArticles(currentUserId: number, query: any): Promise<allArticleResponseInterface> {
+    const follows = await this.followRepository.find({
+      where: {
+        followerId: currentUserId
+      }
+    });
+    if (!follows.length) {
+      return {
+        articles: [],
+        articlesCount: 0,
+      };
+    }
+
+    const favoriteIds = follows.map(follow => follow.followingId);
+
+    const queryBuilder = this.articleRepository
+      .createQueryBuilder('articles')
+      .leftJoinAndSelect('articles.author', 'author')
+      .andWhere('articles.authorId IN (:...ids)', { ids: favoriteIds });
+
+    const articlesCount: number = await queryBuilder.getCount();
+    const articles = await queryBuilder.getMany();
+
+    return {
+      articles: articles,
       articlesCount: articlesCount,
     };
   }
