@@ -7,10 +7,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
 
-  // Настройка CORS
-  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('conduitclone example')

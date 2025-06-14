@@ -127,7 +127,6 @@ export class ArticleService {
 
     const articlesCount: number = await queryBuilder.getCount();
     const articles = await queryBuilder.getMany();
-
     return {
       articles: articles,
       articlesCount: articlesCount,
