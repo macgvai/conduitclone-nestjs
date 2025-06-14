@@ -28,9 +28,16 @@ export class ProfileService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
+    const follow = await this.followRepository.findOne({
+      where: {
+        followerId: currentUserId,
+        followingId: user.id,
+      },
+    })
+
     return {
       ...user,
-      following: false,
+      following: Boolean(follow),
     };
   }
 
@@ -74,6 +81,35 @@ export class ProfileService {
     return {
       ...user,
       following: true,
+    };
+  }
+
+  async unfollowProfile(
+    currentUserId: number,
+    userName: string): Promise<ProfileType> {
+    const user = await this.userRepository.findOne({
+      where: { username: userName },
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (user.id === currentUserId) {
+      throw new HttpException(
+        'You cannot unfollow yourself',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.followRepository.delete({
+      followerId: currentUserId,
+      followingId: user.id,
+    });
+
+    return {
+      ...user,
+      following: false,
     };
   }
 
